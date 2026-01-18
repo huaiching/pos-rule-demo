@@ -1,0 +1,309 @@
+平台為 spring boot 2.7.18 + java 11
+目標是設計 核保規則引擎
+
+核保訊息 的檢核規則 是 以下幾個種類的結合
+1. 基本類型，如：變更前後保單狀態不同 且 變更後保單狀態為 42
+2. 保障類型，需要逐一檢核所有變更後的保障
+   如：rsco.function = 'A' 且 rsco.plan_code.matches('.*ADDR*.')
+3. 客戶類型，需要逐一針對所有關係，檢核 客戶資料 跟 客戶地址
+
+我希望使用 SPEL 表達式 來進行檢核，檢核規則未來會寫在 TABLE 中 讀取出來使用，方便後續維護作業
+請給我 核保引擎的運作邏輯 建議，以及 SPEL 檢核變數 的設計建議
+--
+
+下面是 檔案結構
+變更前 的檔案有
+    polf, colf, clnt, addr, pocl
+變更後 的檔案有
+    rspo, rsco, rscl, rsdr, pocl
+
+
+-- 壽險保單檔
+DROP TABLE IF EXISTS polf;
+CREATE TABLE IF NOT EXISTS polf (
+    policy_no           VARCHAR(12),        -- 保單號碼
+    po_sts_code         VARCHAR(2),         -- 保單狀態
+    po_issue_date       VARCHAR(9),         -- 保單生效日
+    currency            VARCHAR(3),         -- 幣別
+    basic_plan_code     VARCHAR(8),         -- 主約險種代碼
+    basic_rate_scale    VARCHAR(1)          -- 主約險種版數
+);
+
+CREATE UNIQUE INDEX index_1 ON polf(policy_no);
+
+INSERT INTO polf VALUES ('123456789012', '66', '103/01/25', 'TWD', 'SPA', '0');
+
+-- 壽險保單暫存檔
+DROP TABLE IF EXISTS rspo;
+CREATE TABLE IF NOT EXISTS rspo (
+    policy_no           VARCHAR(12),        -- 保單號碼
+    receive_no          VARCHAR(8),         -- 受理號碼
+    po_sts_code         VARCHAR(2),         -- 保單狀態
+    po_issue_date       VARCHAR(9),         -- 保單生效日
+    currency            VARCHAR(3),         -- 幣別
+    basic_plan_code     VARCHAR(8),         -- 主約險種代碼
+    basic_rate_scale    VARCHAR(1)          -- 主約險種版數
+);
+
+CREATE UNIQUE INDEX index_1 ON rspo(policy_no);
+
+INSERT INTO rspo VALUES ('123456789012', 'P000001', '42', '103/01/25', 'TWD', 'SPA', '0');
+
+-- 壽險保障檔
+DROP TABLE IF EXISTS colf;
+CREATE TABLE IF NOT EXISTS colf (
+    policy_no           VARCHAR(12),        -- 保單號碼
+    coverage_no         INTEGER,            -- 保障序號
+    plan_code           VARCHAR(8),         -- 險種代碼
+    rate_scale          VARCHAR(1),         -- 險種版數
+    co_sts_code         VARCHAR(2),         -- 保障狀態
+    co_issue_date       VARCHAR(9),         -- 保障生效日
+    face_amt            FLOAT,              -- 保額
+    client_ident        VARCHAR(2)          -- 關係碼
+);
+
+CREATE UNIQUE INDEX index_1 ON colf(policy_no, coverage_no);
+
+INSERT INTO colf VALUES ('123456789012', 1, 'SPA', '0', '42', '103/01/25', 1000000, 'I1');
+INSERT INTO colf VALUES ('123456789012', 2, 'ADDR', '0', '42', '103/01/25', 1000000, 'I1');
+INSERT INTO colf VALUES ('123456789012', 3, 'GODCR', '0', '42', '103/01/25', 150000, 'I1');
+
+-- 壽險保障暫存檔
+DROP TABLE IF EXISTS rsco;
+CREATE TABLE IF NOT EXISTS rsco (
+    policy_no           VARCHAR(12),        -- 保單號碼
+    coverage_no         INTEGER,            -- 保障序號
+    receive_no          VARCHAR(8),         -- 受理號碼
+    function_ind        VARCHAR(1),         -- 功能碼
+    plan_code           VARCHAR(8),         -- 險種代碼
+    rate_scale          VARCHAR(1),         -- 險種版數
+    co_sts_code         VARCHAR(2),         -- 保障狀態
+    co_issue_date       VARCHAR(9),         -- 保障生效日
+    face_amt            FLOAT,              -- 保額
+    client_ident        VARCHAR(2)          -- 關係碼
+);
+
+CREATE UNIQUE INDEX index_1 ON rsco(policy_no, coverage_no);
+
+INSERT INTO rsco VALUES ('123456789012', 1, 'P000001', '', 'SPA', '0', '42', '103/01/25', 1000000, 'I1');
+INSERT INTO rsco VALUES ('123456789012', 2, 'P000001', 'M', 'ADDR', '0', '42', '103/01/25', 1500000, 'I1');
+INSERT INTO rsco VALUES ('123456789012', 3, 'P000001', '', 'GODCR', '0', '42', '103/01/25', 150000, 'I1');
+INSERT INTO rsco VALUES ('123456789012', 4, 'P000001', 'A', '10TKCR', '0', '42', '103/01/25', 50000, 'I1');
+INSERT INTO rsco VALUES ('123456789012', 5, 'P000001', 'A', 'GDS', '0', '42', '103/01/25', 200000, 'I1');
+
+-- 客戶資料檔
+DROP TABLE IF EXISTS clnt;
+CREATE TABLE IF NOT EXISTS clnt (
+    client_id       VARCHAR(10),        -- 客戶證號
+    names           VARCHAR(40),        -- 姓名
+    birth_date      VARCHAR(9),         -- 生日
+    sex             VARCHAR(1)          -- 性別
+);
+
+CREATE UNIQUE INDEX index_1 ON clnt(client_id);
+
+INSERT INTO clnt VALUES ('A123456789', '測試人員', '075/10/15', '1');
+
+-- 客戶資料暫存檔
+DROP TABLE IF EXISTS rscl;
+CREATE TABLE IF NOT EXISTS rscl (
+    client_id       VARCHAR(10),        -- 客戶證號
+    receive_no      VARCHAR(8),         -- 受理號碼
+    function_ind    VARCHAR(1),         -- 功能碼
+    names           VARCHAR(40),        -- 姓名
+    birth_date      VARCHAR(9),         -- 生日
+    sex             VARCHAR(1)          -- 性別
+);
+
+CREATE UNIQUE INDEX index_1 ON rscl(client_id);
+
+INSERT INTO rscl VALUES ('A123456789', 'P000001', 'M', '處理人員', '075/10/15', '1');
+
+-- 客戶地址檔
+DROP TABLE IF EXISTS addr;
+CREATE TABLE IF NOT EXISTS addr (
+    client_id       VARCHAR(10),        -- 客戶證號
+    addr_ind        VARCHAR(1),         -- 地址指示
+    address         VARCHAR(72),        -- 地址
+    tel_1           VARCHAR(10)         -- 電話
+);
+
+CREATE UNIQUE INDEX index_1 ON addr(client_id, addr_ind);
+
+INSERT INTO addr VALUES ('A123456789', '0', '台北市石潭路58號1樓', '23455511');
+INSERT INTO addr VALUES ('A123456789', 'E', 'abc001@abc.com', '0912345678');
+
+-- 客戶地址檔
+DROP TABLE IF EXISTS rsdr;
+CREATE TABLE IF NOT EXISTS rsdr (
+    client_id       VARCHAR(10),        -- 客戶證號
+    addr_ind        VARCHAR(1),         -- 地址指示
+    receive_no      VARCHAR(8),         -- 受理號碼
+    function_ind    VARCHAR(1),         -- 功能碼
+    address         VARCHAR(72),        -- 地址
+    tel_1           VARCHAR(10)         -- 電話
+);
+
+CREATE UNIQUE INDEX index_1 ON rsdr(client_id, addr_ind);
+
+INSERT INTO rsdr VALUES ('A123456789', '0', 'P000001', 'M', '台北市石潭路58號6樓', '23455511');
+INSERT INTO rsdr VALUES ('A123456789', '1', 'P000001', 'A', '台北市忠孝東路一段1號1樓', '23455511');
+INSERT INTO rsdr VALUES ('A123456789', 'E', 'P000001', 'M', 'qazxsw@abc.com', '0912345678');
+
+-- 保單關係檔
+DROP TABLE IF EXISTS pocl;
+CREATE TABLE IF NOT EXISTS pocl (
+    policy_no       VARCHAR(12),        -- 保單號碼
+    client_ident    VARCHAR(2),         -- 關係碼
+    client_id       VARCHAR(10)         -- 客戶證號
+);
+
+CREATE UNIQUE INDEX index_1 ON pocl(policy_no, client_ident);
+
+INSERT INTO pocl VALUES ('123456789012', 'O1', 'A123456789');
+INSERT INTO pocl VALUES ('123456789012', 'I1', 'A123456789');
+
+
+--
+假設 核保訊息 P001 的規則是
+1. polf.po_sts_code != rspo.po_sts_code && rspo.po_sts_code == '42'
+2. rsco.function_ind == 'A' && rsco.plan_code.matches('.*ADDR.*')
+幫我設計 核保變數表 及 核保規則表 的 TABLE 結構 以及 範例資料
+
+--
+
+-- 核保變數表：定義 SpEL 表達式中可使用的所有變數，提供變數的來源與說明
+CREATE TABLE underwriting_variables (
+    variable_id     SERIAL PRIMARY KEY,                 -- 變數自動流水號，主鍵
+    variable_name   VARCHAR(100) NOT NULL UNIQUE,       -- SpEL 中使用的變數完整路徑名稱（唯一，不可重複）
+                                                        -- 範例：before.polf.po_sts_code、after.rsco.plan_code
+    description     VARCHAR(255),                       -- 變數的中文業務說明
+    data_type       VARCHAR(20),                        -- 資料型態：STRING, INTEGER, FLOAT, BOOLEAN, DATE 等
+    source_table    VARCHAR(50),                        -- 資料來源的資料表名稱（例如 polf、rspo、rsco）
+    source_column   VARCHAR(50),                        -- 資料來源的欄位名稱
+    is_before       BOOLEAN DEFAULT TRUE,               -- 是否屬於變更前資料（true=變更前 before, false=變更後 after）
+    active_flag     BOOLEAN DEFAULT TRUE,               -- 是否目前有效（false=停用該變數，不建議在規則中使用）
+    remark          TEXT                                -- 備註（例如使用注意事項、特殊說明）
+);
+
+-- 建議索引
+CREATE INDEX idx_variable_name ON underwriting_variables(variable_name);
+
+INSERT INTO underwriting_variables (variable_name, description, data_type, source_table, source_column, is_before, active_flag, remark) VALUES
+('before.polf.po_sts_code',     '變更前保單狀態碼',               'STRING',   'polf',  'po_sts_code',  TRUE,  TRUE,  '例如：11=有效、66=失效等'),
+('after.rspo.po_sts_code',      '變更後保單狀態碼',               'STRING',   'rspo',  'po_sts_code',  FALSE, TRUE,  '常見核保條件會檢查是否變更為42'),
+('before.polf.basic_plan_code', '變更前主約險種代碼',             'STRING',   'polf',  'basic_plan_code', TRUE, TRUE, NULL),
+('after.rsco.function_ind',     '變更後保障功能指示碼',           'STRING',   'rsco',  'function_ind', FALSE, TRUE, 'A=新增、M=修改、D=刪除 等'),
+('after.rsco.plan_code',        '變更後保障險種代碼',             'STRING',   'rsco',  'plan_code',    FALSE, TRUE, '常用於檢查特定附加險，如 ADDR、10TKCR'),
+('after.rsco.face_amt',         '變更後保障保額',                 'FLOAT',    'rsco',  'face_amt',     FALSE, TRUE, '金額類，注意單位通常為元'),
+('currentCoverage',             '當前正在檢核的保障項目物件',     'OBJECT',   NULL,    NULL,           FALSE, TRUE, '僅在 COVERAGE 類型規則中使用，引擎會動態注入'),
+('currentClient',               '當前正在檢核的客戶物件',         'OBJECT',   NULL,    NULL,           FALSE, TRUE, '僅在 CLIENT 類型規則中使用'),
+('currentAddresses',            '當前客戶的所有地址集合',         'LIST',     NULL,    NULL,           FALSE, TRUE, '支援 SpEL 集合操作，如 .?[function_ind == ''A'']');
+
+
+
+
+
+-- 核保規則表：存放各核保訊息的具體檢核規則（SpEL）
+CREATE TABLE underwriting_rules (
+    rule_id         SERIAL PRIMARY KEY,                 -- 規則自動流水號，主鍵
+    message_code    VARCHAR(20) NOT NULL,               -- 所屬核保訊息代碼（例如 P001、ADDR_MODIFY、P002）
+                                                        -- 同一 message_code 代表同一種核保情境
+    rule_type       VARCHAR(20) NOT NULL,               -- 規則類型：BASIC、COVERAGE、CLIENT、RELATION 等
+                                                        -- 決定引擎如何執行（單筆、迴圈保障、迴圈客戶）
+    spel_expression TEXT NOT NULL,                      -- SpEL 表達式內容（注意：字串需使用雙單引號 ''）
+    error_code      VARCHAR(20),                        -- 觸發時的錯誤代碼（建議加上 message_code 前綴）
+    error_message   VARCHAR(500),                       -- 觸發時顯示給使用者的完整中文訊息
+    priority        INTEGER DEFAULT 0,                  -- 同一個 message_code 下的執行順序（數字越小越先執行）
+    active_flag     BOOLEAN DEFAULT TRUE,               -- 是否啟用此規則
+    valid_from      DATE,                               -- 規則生效起始日期（可空白）
+    valid_to        DATE,                               -- 規則生效結束日期（可空白，支援版本控制）
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,-- 建立時間
+    updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,-- 更新時間
+    remark          TEXT                                -- 備註（例如：此規則適用於哪種商品、特殊說明）
+);
+
+-- 建議索引
+CREATE INDEX idx_uw_rules_message ON underwriting_rules(message_code, active_flag);
+CREATE INDEX idx_uw_rules_priority ON underwriting_rules(message_code, priority);
+
+
+INSERT INTO underwriting_rules (
+    message_code, rule_type, spel_expression,
+    error_code, error_message, priority, active_flag, remark
+) VALUES
+-- P001：保單狀態變更為42 或 新增/修改含ADDR保障
+('P001', 'BASIC', 
+ 'before.polf.po_sts_code != after.rspo.po_sts_code && after.rspo.po_sts_code == ''42''',
+ 'UW-P001-01', '保單狀態變更為42，請確認是否需額外核保作業', 10, TRUE, '基本狀態變更檢核'),
+
+('P001', 'COVERAGE', 
+ 'currentCoverage.function_ind == ''A'' && currentCoverage.plan_code matches ''.*ADDR.*''',
+ 'UW-P001-02', '新增含ADDR之保障項目，需進行核保審核', 20, TRUE, '新增地址保障'),
+
+('P001', 'COVERAGE', 
+ 'currentCoverage.function_ind == ''M'' && currentCoverage.plan_code matches ''.*ADDR.*'' && currentCoverage.face_amt > 3000000',
+ 'UW-P001-03', 'ADDR保障項目保額修改超過300萬，需主管複核', 30, TRUE, '高額修改加強檢核'),
+
+-- P002：客戶資料或地址變更相關
+('P002', 'CLIENT', 
+ 'currentClient.function_ind == ''M'' || currentAddresses.?[function_ind == ''A'' || function_ind == ''M''].size() > 0',
+ 'UW-P002-01', '客戶基本資料或地址有變更，請確認變更內容正確性', 10, TRUE, '地址/姓名變更通用'),
+
+('P002', 'CLIENT', 
+ 'currentAddresses.?[addr_ind == ''0''].size() == 0',
+ 'UW-P002-02', '缺少戶籍地址（addr_ind=0），地址變更無法進行', 20, TRUE, '強制檢核戶籍地址'),
+
+-- P003：加保高風險商品
+('P003', 'COVERAGE', 
+ 'currentCoverage.function_ind == ''A'' && currentCoverage.plan_code in {''10TKCR'', ''GDS'', ''NEWVIP''}',
+ 'UW-P003-01', '新增高風險附加險種，請確認投保動機與財務狀況', 10, TRUE, '特定商品加保檢核');
+
+
+---------------------------------------
+
+-- 核保規則表
+流水號
+核保訊息代碼
+檢核群組編號 : 用於針對同一個核保訊息，有多組不同的檢核規則時，用來標記那些檢核訊息是 同一組，檢核時要一起判斷
+規則類型 : 基本、保障、客戶、...
+檢核規則 : SPEL 表達式
+效性 : 啟用/停用
+
+CREATE TABLE IF NOT EXISTS pos_rules (
+    id              BIGSERIAL PRIMARY KEY,  	-- 流水號（建議用 BIGSERIAL 避免未來溢位）
+    error_code      VARCHAR(4) NOT NULL,    	-- 核保訊息代碼，例如 P001、UA02、PT01 等
+    group_code      VARCHAR(10) DEFAULT NULL	-- 檢核群組編號：僅用簡單代碼 A、B、C、D... 或 01、02、03
+												-- 用途：標記「屬於同一類檢核」，同一 message_code 內相同 group 代表一起判斷的群組
+												-- 留空或 NULL 表示不分類（最常見情況）
+    rule_model      VARCHAR(20) NOT NULL,   	-- 規則模型： basic (基本), coverage (保障), client (客戶), benf (受益人), invs (投資)
+    spel_expression VARCHAR(250) NOT NULL,  	-- SpEL 檢核規則
+    priority        INTEGER DEFAULT 0,      	-- 執行順序（越小越先跑）
+    active_flag     CHAR(1) DEFAULT 'Y'     	-- 效性：Y=啟用, N=停用
+);
+
+
+
+-- 核保變數表
+流水號
+變數代碼
+變數說明
+變數型態 : String / Integer / Double
+變數規則
+
+CREATE TABLE pos_variables (
+    id              BIGSERIAL PRIMARY KEY,                  -- 流水號
+    variable_code   VARCHAR(100) NOT NULL UNIQUE,           -- 變數代碼
+    description     VARCHAR(250) NOT NULL,                  -- 變數說明（中文）
+    data_type       VARCHAR(20) NOT NULL,                   -- 變數型態：String / Integer / Double
+    spel_expression VARCHAR(250) NOT NULL                   -- SpEL 檢核規則
+);
+
+------------
+
+SpEL 變數依照 rule_model 分組
+- basic    : 基本模組   - Map<String, Object>       - polf, rspo, ...
+- coverage : 保障模組   - List<Map<String, Object>> - colf, rsco, ...              - 一個保障一筆
+- client   : 客戶模組   - List<Map<String, Object>> - clnt, addr, pocl, rscl, rsdr - 一個關係一筆
+- benf     : 受益人模組 - List<Map<String, Object>> - rsbf, benf(?)                - 一個受益人一筆(變更後)
+- invs     : 投資模組   - List<Map<String, Object>> - vpoiv, vpniv, rsiv, rsnv     - 一個投資標的一筆
