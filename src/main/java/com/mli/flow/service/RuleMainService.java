@@ -1,6 +1,6 @@
 package com.mli.flow.service;
 
-import com.mli.flow.dto.engine.CheckResultDTO;
+import com.mli.flow.dto.CheckResultDTO;
 import com.mli.flow.service.engine.CheckService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

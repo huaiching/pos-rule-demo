@@ -1,7 +1,6 @@
 package com.mli.flow.controller;
 
-import com.mli.flow.dto.engine.CheckResultDTO;
-import com.mli.flow.entity.PsecEntity;
+import com.mli.flow.dto.CheckResultDTO;
 import com.mli.flow.service.RuleMainService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

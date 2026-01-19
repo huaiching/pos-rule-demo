@@ -2,8 +2,8 @@ package com.mli.flow.service.engine;
 
 import com.mli.flow.constants.MessageTypeEnum;
 import com.mli.flow.constants.RuleTypeEnum;
-import com.mli.flow.dto.engine.CheckResultDTO;
-import com.mli.flow.dto.engine.RuleEvalResultDTO;
+import com.mli.flow.dto.CheckResultDTO;
+import com.mli.flow.dto.RuleEvalResultDTO;
 import com.mli.flow.entity.PosRuleEntity;
 import com.mli.flow.entity.PosRuleMessageEntity;
 import com.mli.flow.entity.PsecEntity;

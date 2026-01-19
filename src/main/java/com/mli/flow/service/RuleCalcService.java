@@ -1,5 +1,6 @@
 package com.mli.flow.service;
 
+import com.mli.flow.contract.ChangeVariableContract;
 import com.mli.flow.entity.*;
 import com.mli.flow.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -37,6 +39,8 @@ public class RuleCalcService {
     private RsdrRepository rsdrRepository;
     @Autowired
     private ChswRepository chswRepository;
+    @Autowired
+    private List<ChangeVariableContract> changeVariableContractList;
 
     public Map<String, Object> execute() {
         // 取得 測試用初始資料
@@ -51,11 +55,20 @@ public class RuleCalcService {
         List<RsdrEntity> rsdrEntityList = rsdrRepository.findAll();
         List<ChswEntity> chswEntityList = chswRepository.findAll();
 
+        // 設定 自定義變數
+        Map<String, Object> calcDataMap = new HashMap<>();
+        List<CompletableFuture<Void>> futureList = new ArrayList<>();
+        for (ChangeVariableContract changeVariableContract : changeVariableContractList) {
+            futureList.add(CompletableFuture.runAsync(() -> changeVariableContract.execute(calcDataMap)));
+        }
+        CompletableFuture.allOf(futureList.toArray(new CompletableFuture[0])).join();
+
         // 設定資料: 基本模組
         Map<String, Object> basicDataMap = new HashMap<>();
         basicDataMap.put("polf", polfEntityList.get(0));
         basicDataMap.put("rspo", rspoEntityList.get(0));
         basicDataMap.put("chsw", chswEntityList.get(0));
+        basicDataMap.putAll(calcDataMap);
         // 設定資料: 保障模組
         List<Map<String, Object>> converageDataMapList = new ArrayList<>();
         for (RscoEntity rscoEntity : rscoEntityList) {
@@ -66,6 +79,7 @@ public class RuleCalcService {
                     .filter(colf -> rscoEntity.getCoverageNo().equals(colf.getCoverageNo()))
                     .findFirst().orElse(null);
             converageDataMap.put("colf", colfEntity);
+            converageDataMap.putAll(calcDataMap);
             converageDataMapList.add(converageDataMap);
         }
         // 設定資料: 客戶模組
@@ -95,6 +109,7 @@ public class RuleCalcService {
                         .collect(Collectors.toList());
                 clientDataMap.put("addr", addrEntities);
             }
+            clientDataMap.putAll(calcDataMap);
             clientDataMapList.add(clientDataMap);
         });
 

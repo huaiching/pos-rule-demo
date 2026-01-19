@@ -190,18 +190,19 @@ CREATE TABLE IF NOT EXISTS pos_rule (
 CREATE UNIQUE INDEX index_1 ON pos_rule(id);
 
 INSERT INTO pos_rule VALUES (DEFAULT, 'P001', 'A', '1', '#chsw.changeType == ''2'' and #rspo.poStsCode == ''42''', 'Y');
-INSERT INTO pos_rule VALUES (DEFAULT, 'P001', 'A', '2', '#rsco.functionInd.matches(''[AM]'') and #rsco.faceAmt >= 10000', 'Y');
+INSERT INTO pos_rule VALUES (DEFAULT, 'P001', 'A', '2', '#rsco.functionInd.matches(''[AM]'') and #P001.contains(#rsco.planCode) and #rsco.faceAmt >= 10000', 'Y');
 
 -- 核保變數表
-DROP TABLE IF EXISTS pos_variables;
-CREATE TABLE IF NOT EXISTS pos_variables (
+DROP TABLE IF EXISTS pos_variable;
+CREATE TABLE IF NOT EXISTS pos_variable (
     variable_code   VARCHAR(100) NOT NULL UNIQUE,           -- 變數代碼
     description     VARCHAR(250) NOT NULL,                  -- 變數說明（中文）
-    data_type       VARCHAR(20) NOT NULL,                   -- 變數型態：String / Integer / Double
-    expression      VARCHAR(250) NOT NULL                   -- 檢核規則
+    data_type       VARCHAR(100) NOT NULL,                  -- 變數型態：String / Integer / Double
 );
 
-CREATE UNIQUE INDEX index_1 ON pos_variables(variable_code);
+CREATE UNIQUE INDEX index_1 ON pos_variable(variable_code);
+
+INSERT INTO pos_variable VALUES ('P001', '核保訊息 P001 的 檢核險種', 'List<String>');
 
 -- 核保訊息表
 DROP TABLE IF EXISTS pos_rule_message;
