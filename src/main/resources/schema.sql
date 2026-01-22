@@ -167,7 +167,7 @@ DROP TABLE IF EXISTS psec;
 CREATE TABLE IF NOT EXISTS psec (
     nb_err_code     VARCHAR(4),         -- 核保訊息代碼
     nb_err_desc     VARCHAR(240),       -- 核保訊息文字
-    level           VARCHAR(1)          -- 核保等級
+    level           VARCHAR(1)          -- 核保等級 (severity)
 );
 
 CREATE UNIQUE INDEX index_1 ON psec(nb_err_code);
