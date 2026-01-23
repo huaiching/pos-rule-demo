@@ -307,3 +307,89 @@ SpEL 變數依照 rule_model 分組
 - client   : 客戶模組   - List<Map<String, Object>> - clnt, addr, pocl, rscl, rsdr - 一個關係一筆
 - benf     : 受益人模組 - List<Map<String, Object>> - rsbf, benf(?)                - 一個受益人一筆(變更後)
 - invs     : 投資模組   - List<Map<String, Object>> - vpoiv, vpniv, rsiv, rsnv     - 一個投資標的一筆
+
+
+------------------------
+-- pocl
+INSERT INTO pocl (policy_no,client_ident,client_id) VALUES ('100000411962','O1','F126437610');
+INSERT INTO pocl (policy_no,client_ident,client_id) VALUES ('100000411962','I1','F126437610');
+INSERT INTO pocl (policy_no,client_ident,client_id) VALUES ('100000411962','SS','Q228076928');
+INSERT INTO pocl (policy_no,client_ident,client_id) VALUES ('100000411962','C1','F138244321');
+INSERT INTO pocl (policy_no,client_ident,client_id) VALUES ('100000411962','C2','F233828687');
+
+-- polf
+INSERT INTO polf VALUES ('100000411962','42','110/11/26','TWD','20PWL   ','6');
+
+-- rspo
+INSERT INTO polf VALUES ('100000411962','','42','110/11/26','TWD','20PWL   ','6');
+
+-- colf
+INSERT INTO colf VALUES ('100000411962',1,'20PWL   ','6','42','110/11/26',100000.0,'I1');
+INSERT INTO colf VALUES ('100000411962',2,'ADDR    ','I','42','110/11/26',1000000.0,'I1');
+INSERT INTO colf VALUES ('100000411962',3,'AMRR    ','I','42','110/11/26',30000.0,'I1');
+INSERT INTO colf VALUES ('100000411962',4,'DHIR    ','I','42','110/11/26',1000.0,'I1');
+INSERT INTO colf VALUES ('100000411962',5,'BHSRB   ','0','42','110/11/26',1.0,'I1');
+INSERT INTO colf VALUES ('100000411962',6,'20HKCRA ','3','42','110/11/26',2.0,'I1');
+INSERT INTO colf VALUES ('100000411962',7,'20CHHIR ','0','42','110/11/26',1000.0,'I1');
+INSERT INTO colf VALUES ('100000411962',8,'20CWPR  ','A','42','110/11/26',50000.0,'I1');
+
+-- rsco
+INSERT INTO colf VALUES ('100000411962',1,'','','20PWL   ','6','42','110/11/26',100000.0,'I1');
+INSERT INTO colf VALUES ('100000411962',2,'','','ADDR    ','I','42','110/11/26',1000000.0,'I1');
+INSERT INTO colf VALUES ('100000411962',3,'','','AMRR    ','I','42','110/11/26',30000.0,'I1');
+INSERT INTO colf VALUES ('100000411962',4,'','','DHIR    ','I','42','110/11/26',1000.0,'I1');
+INSERT INTO colf VALUES ('100000411962',5,'','','BHSRB   ','0','42','110/11/26',1.0,'I1');
+INSERT INTO colf VALUES ('100000411962',6,'','','20HKCRA ','3','42','110/11/26',2.0,'I1');
+INSERT INTO colf VALUES ('100000411962',7,'','','20CHHIR ','0','42','110/11/26',1000.0,'I1');
+INSERT INTO colf VALUES ('100000411962',8,'','','20CWPR  ','A','42','110/11/26',50000.0,'I1');
+
+-- clnt
+INSERT INTO clnt VALUES ('F126437610','陳Ｏ榮','070/12/28','1');
+INSERT INTO clnt VALUES ('F138244321','陳Ｏ睿','101/12/14','1');
+INSERT INTO clnt VALUES ('F233828687','陳Ｏ希','104/08/06','2');
+INSERT INTO clnt VALUES ('Q228076928','顏Ｏ玲','072/12/20','2');
+
+-- rscl
+INSERT INTO rscl VALUES ('F126437610','','','I1','陳Ｏ榮','070/12/28','1');
+INSERT INTO rscl VALUES ('F126437610','','','O1','陳Ｏ榮','070/12/28','1');
+INSERT INTO rscl VALUES ('F138244321','','','C1','陳Ｏ睿','101/12/14','1');
+INSERT INTO rscl VALUES ('F233828687','','','C2','陳Ｏ希','104/08/06','2');
+INSERT INTO rscl VALUES ('Q228076928','','','SS','顏Ｏ玲','072/12/20','2');
+
+-- addr
+INSERT INTO addr VALUES ('F126437610','0','新北市三重區成功路３２號１ＯＯＯＯ','02-29747xxx');
+INSERT INTO addr VALUES ('F126437610','E','a0976062329@gmailＯＯＯＯ','0928573xxx ');
+INSERT INTO addr VALUES ('F138244321','0','新北市三重區成功路３ＯＯＯＯ','02-29747xxx');
+INSERT INTO addr VALUES ('F233828687','0','新北市三重區成功路３２號１ＯＯＯＯ','02-29747xxx');
+INSERT INTO addr VALUES ('Q228076928','0','新北市三重區成功路３ＯＯＯＯ','02-29747xxx');
+INSERT INTO addr VALUES ('Q228076928','1','新北市三重區成功路３２號１ＯＯＯＯ','02-29747xxx');
+INSERT INTO addr VALUES ('Q228076928','E','a0976062329@gmailＯＯＯＯ','0976062xxx ');
+
+-- rsdr
+INSERT INTO addr VALUES ('F126437610','0','','','新北市三重區成功路３２號１ＯＯＯＯ','02-29747xxx');
+INSERT INTO addr VALUES ('F126437610','E','','','a0976062329@gmailＯＯＯＯ','0928573xxx ');
+INSERT INTO addr VALUES ('F138244321','0','','','新北市三重區成功路３ＯＯＯＯ','02-29747xxx');
+INSERT INTO addr VALUES ('F233828687','0','','','新北市三重區成功路３２號１ＯＯＯＯ','02-29747xxx');
+INSERT INTO addr VALUES ('Q228076928','0','','','新北市三重區成功路３ＯＯＯＯ','02-29747xxx');
+INSERT INTO addr VALUES ('Q228076928','1','','','新北市三重區成功路３２號１ＯＯＯＯ','02-29747xxx');
+INSERT INTO addr VALUES ('Q228076928','E','','','a0976062329@gmailＯＯＯＯ','0976062xxx ');
+
+-- pldf
+INSERT INTO pldf (plan_code,rate_scale,plan_abbr_code,plan_class_code) VALUES ('20PWL   ','6','PWL   ','OH11');
+INSERT INTO pldf (plan_code,rate_scale,plan_abbr_code,plan_class_code) VALUES ('ADDR    ','I','ADDR  ','6021');
+INSERT INTO pldf (plan_code,rate_scale,plan_abbr_code,plan_class_code) VALUES ('AMRR    ','I','AMRR  ','6025');
+INSERT INTO pldf (plan_code,rate_scale,plan_abbr_code,plan_class_code) VALUES ('DHIR    ','I','DHIR  ','6023');
+INSERT INTO pldf (plan_code,rate_scale,plan_abbr_code,plan_class_code) VALUES ('BHSRB   ','0','BHSR  ','0621');
+INSERT INTO pldf (plan_code,rate_scale,plan_abbr_code,plan_class_code) VALUES ('20HKCRA ','3','HKCR  ','CA21');
+INSERT INTO pldf (plan_code,rate_scale,plan_abbr_code,plan_class_code) VALUES ('20CHHIR ','0','CHHIR ','9W21');
+INSERT INTO pldf (plan_code,rate_scale,plan_abbr_code,plan_class_code) VALUES ('20CWPR  ','A','CWPR  ','E421');
+
+plan_code 8
+rate_scale 1
+plan_abbr_code 6
+plan_class_code 4
+
+
+
+
+
