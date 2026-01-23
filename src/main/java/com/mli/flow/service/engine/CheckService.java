@@ -199,7 +199,8 @@ public class CheckService {
         // 輸出檢核結果
         CheckResultDTO checkResultDTO = new CheckResultDTO();
         checkResultDTO.setNbErrCode(psec.getNbErrCode());
-        checkResultDTO.setLevel(psec.getLevel());
+        checkResultDTO.setLevel(psec.getSeverity()
+        );
         checkResultDTO.setMessages(messageList);
 
         return checkResultDTO;

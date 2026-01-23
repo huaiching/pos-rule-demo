@@ -40,6 +40,7 @@ public class SpelRuleService {
             Expression exp = parser.parseExpression(expression);
             Boolean result = exp.getValue(context, Boolean.class);
             ruleEvalResultDTO.setMatched(Boolean.TRUE.equals(result));
+            log.debug("檢核規則={}, 檢核結果={}", expression, result);
             // 保存命中資料的檢核變數
             if (ruleEvalResultDTO.getMatched()) {
                 ruleEvalResultDTO.setSimpleContext(dataMap);
@@ -68,6 +69,7 @@ public class SpelRuleService {
                 // 評估表達式
                 Expression exp = parser.parseExpression(expression);
                 Boolean result = exp.getValue(context, Boolean.class);
+                log.debug("檢核規則={}, 檢核結果={}", expression, result);
                 // 保存命中資料的檢核變數
                 if (Boolean.TRUE.equals(result)) {
                     ruleEvalResultDTO.setMatched(true);

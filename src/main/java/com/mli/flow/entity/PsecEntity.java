@@ -23,8 +23,8 @@ public class PsecEntity {
     private String nbErrDesc;
 
     @Schema(description = "核保等級")
-    @Column(name = "level")
-    private String level;
+    @Column(name = "severity")
+    private String severity;
 
     public PsecEntity() {
     }
@@ -45,12 +45,12 @@ public class PsecEntity {
         this.nbErrDesc = nbErrDesc;
     }
 
-    public String getLevel() {
-        return level;
+    public String getSeverity() {
+        return severity;
     }
 
-    public void setLevel(String level) {
-        this.level = level;
+    public void setSeverity(String severity) {
+        this.severity = severity;
     }
 
     @Override

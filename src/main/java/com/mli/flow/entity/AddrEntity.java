@@ -28,7 +28,7 @@ public class AddrEntity {
 
     @Schema(description = "電話")
     @Column(name = "tel_1")
-    private Integer tel1;
+    private String tel1;
 
     public AddrEntity() {
     }
@@ -57,11 +57,11 @@ public class AddrEntity {
         this.address = address;
     }
 
-    public Integer getTel1() {
+    public String getTel1() {
         return tel1;
     }
 
-    public void setTel1(Integer tel1) {
+    public void setTel1(String tel1) {
         this.tel1 = tel1;
     }
 

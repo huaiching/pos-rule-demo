@@ -27,7 +27,7 @@ public class ColfEntity {
 
     @Schema(description = "險種版數")
     @Column(name = "rate_scale")
-    private Integer rateScale;
+    private String rateScale;
 
     @Schema(description = "保障狀態")
     @Column(name = "co_sts_code")
@@ -72,11 +72,11 @@ public class ColfEntity {
         this.planCode = planCode;
     }
 
-    public Integer getRateScale() {
+    public String getRateScale() {
         return rateScale;
     }
 
-    public void setRateScale(Integer rateScale) {
+    public void setRateScale(String rateScale) {
         this.rateScale = rateScale;
     }
 
