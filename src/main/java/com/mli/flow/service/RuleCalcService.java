@@ -46,7 +46,6 @@ public class RuleCalcService {
         Map<String, Object> commonMap = setCommonModel();
         // 設定資料: 基本模組
         Map<String, Object> basicDataMap = setBasicModel(commonMap);
-        ;
         // 設定資料: 保障模組
         List<Map<String, Object>> converageDataMapList = setCoverageModel(commonMap);
         // 設定資料: 客戶模組
