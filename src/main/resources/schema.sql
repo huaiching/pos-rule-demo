@@ -205,9 +205,8 @@ DROP TABLE IF EXISTS pos_rule;
 CREATE TABLE IF NOT EXISTS pos_rule (
     id                  BIGSERIAL,  	            -- 流水號
     nb_err_code         VARCHAR(4) NOT NULL,    	-- 核保訊息代碼，例如 P001、UA02、PT01 等
-    group_code          VARCHAR(10) DEFAULT NULL,   -- 檢核群組編號：僅用簡單代碼 A、B、C、D... 或 01、02、03
-											    	-- 用途：標記「屬於同一類檢核」，同一 message_code 內相同 group 代表一起判斷的群組
-											    	-- 留空或 NULL 表示不分類（最常見情況）
+    group_code          VARCHAR(10) DEFAULT '1',    -- 檢核群組編號
+											    	-- 用途：標記「屬於同一類檢核」，相同群組編號，代表 要一起判斷(且)的規則
     rule_model          VARCHAR(1) NOT NULL,   	    -- 規則模型： 1.基本模組 / 2.保障模組 / 3.客戶模組 / 4.受益人模組 / 5.投資模組
     expression          VARCHAR(250) NOT NULL,  	-- 檢核規則
     active_flag         CHAR(1) DEFAULT 'Y'     	-- 效性：Y=啟用, N=停用
@@ -217,11 +216,13 @@ CREATE UNIQUE INDEX index_1 ON pos_rule(id);
 
 INSERT INTO pos_rule VALUES (DEFAULT, 'P001', 'A', '1', '#chsw.changeType == ''1'' and #rspo.poStsCode == ''42''', 'Y');
 INSERT INTO pos_rule VALUES (DEFAULT, 'P001', 'A', '2', '#rsco.functionInd.matches(''[AM]'') and #P001.contains(#pldfNew.planAbbrCode) and #rsco.faceAmt >= 10000', 'Y');
+INSERT INTO pos_rule VALUES (DEFAULT, 'P001', 'B', '1', '#chsw.changeType == ''2'' and #rspo.poStsCode == ''42''', 'Y');
+INSERT INTO pos_rule VALUES (DEFAULT, 'P001', 'B', '2', '#rsco.functionInd.matches(''[AM]'') and #P001.contains(#pldfNew.planAbbrCode) and #rsco.faceAmt >= 50000', 'Y');
 
 -- 核保變數表
 DROP TABLE IF EXISTS pos_variable;
 CREATE TABLE IF NOT EXISTS pos_variable (
-    variable_code   VARCHAR(100) NOT NULL UNIQUE,           -- 變數代碼
+    variable_code   VARCHAR(100) NOT NULL,           -- 變數代碼
     description     VARCHAR(250) NOT NULL,                  -- 變數說明（中文）
     data_type       VARCHAR(100) NOT NULL,                  -- 變數型態：String / Integer / Double
 );

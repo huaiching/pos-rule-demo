@@ -59,23 +59,24 @@ graph TB
         %% 規則來源
         DB4[(核保變數表<br/>檢核規則表)]
         S1[取得規則表]
-        DB4 -.-> S1
+        S1 -.- DB4
         
         %% 主要檢核流程
-        S2[規則檢核引擎<br/>遍歷核保代碼]
+        S2[核保訊檢核 <br> 異步 檢查 核保訊息]
         S3[設定 核保訊息文字 <br> 透過 SpEL 表達式 設定]
         S1 --> S2 --> S3
+        S2 ---|遍歷核保代碼| S2Detail
         
         %% 檢核細節
         subgraph S2Detail["核保訊息檢核邏輯"]
             direction TB
             
             L1[根據核保訊息代碼<br/>取得對應規則]
-            L2[依群組執行檢核<br/>OR 關係]
+            L2[依群組執行檢核<br>異步 執行<br/>OR 關係]
             
             subgraph RuleTypes["規則檢核 <br> AND 關係"]
                 direction LR
-                L3[簡單類型<br/>基本資料]
+                L3[簡單類型<br/>基本]
                 L4[複雜類型<br/>保障 / 客戶]
             end
             
@@ -93,7 +94,6 @@ graph TB
             Result -->|False| ResultFalse
         end
         
-        S2 --- S2Detail
     end
 
     %% 主流程與細節連接

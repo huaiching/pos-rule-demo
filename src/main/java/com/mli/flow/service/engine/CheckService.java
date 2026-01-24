@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,19 +34,16 @@ public class CheckService {
      * @param dataMap 檢核變數
      */
     public List<CheckResultDTO> execute(Map<String, Object> dataMap) {
-        List<CheckResultDTO> results = new ArrayList<>();
+        List<CheckResultDTO> results = new CopyOnWriteArrayList<>();
         // 取得所有核保規則
         List<PsecEntity> psecList = psecRepository.findAll();
         // 取得所有檢核規則
         List<PosRuleEntity> allRules = posRuleRepository.findAll();
 
-        // 逐一進行核保檢核
-        for (PsecEntity psec : psecList) {
-            CheckResultDTO result = evaluateRule(psec, allRules, dataMap);
-            if (result != null) {
-                results.add(result);
-            }
-        }
+        // 進行核保檢核
+        psecList.parallelStream().forEach(psec -> {
+            results.addAll(Objects.requireNonNull(evaluateRule(psec, allRules, dataMap)));
+        });
 
         return results;
     }
@@ -57,7 +55,8 @@ public class CheckService {
      * @param allRules   核保規則表
      * @param dataMap    檢核變數
      */
-    private CheckResultDTO evaluateRule(PsecEntity psecEntity, List<PosRuleEntity> allRules, Map<String, Object> dataMap) {
+    private List<CheckResultDTO> evaluateRule(PsecEntity psecEntity, List<PosRuleEntity> allRules, Map<String, Object> dataMap) {
+        List<CheckResultDTO> checkResultDTOList = new CopyOnWriteArrayList<>();
         // 取得 要檢核的規則
         List<PosRuleEntity> checkRuleList = allRules.stream()
                 .filter(rule -> rule.getNbErrCode().equals(psecEntity.getNbErrCode()))
@@ -72,7 +71,7 @@ public class CheckService {
                 .collect(Collectors.toList());
 
         // 依照群組進行檢核：任一群組成立即成立
-        for (String groupCode : groupCodeList) {
+        groupCodeList.parallelStream().forEach(groupCode -> {
             // 取得 該群組的 檢核規則
             List<PosRuleEntity> groupRules = checkRuleList.stream()
                     .filter(rule -> rule.getGroupCode().equals(groupCode))
@@ -82,11 +81,11 @@ public class CheckService {
 
             if (evalResult.getMatched()) {
                 // 群組命中，生成結果
-                return buildCheckResult(psecEntity, evalResult);
+                checkResultDTOList.add(buildCheckResult(psecEntity, evalResult));
             }
-        }
+        });
 
-        return null;
+        return checkResultDTOList;
     }
 
     /**
