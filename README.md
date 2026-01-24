@@ -28,9 +28,9 @@ graph TB
         Common[共用變數池<br/>集合注入 + 異步處理]
         
         %% 三大資料組裝模組
-        M1[🔹 基本資料組裝]
-        M2[🔹 保障資料組裝<br/>遍歷所有保障]
-        M3[🔹 客戶資料組裝<br/>遍歷客戶關係]
+        M1[基本資料組裝]
+        M2[保障資料組裝<br/>遍歷所有保障]
+        M3[客戶資料組裝<br/>遍歷客戶關係]
         
         %% 輸出容器
         basicMap[basicMap]
@@ -39,9 +39,9 @@ graph TB
         dataMapContainer[dataMap<br/>統一資料容器]
         
         %% 連接關係
-        DB1 -.-> M1
-        DB2 -.-> M2
-        DB3 -.-> M3
+        DB1 -..-> M1
+        DB2 -..-> M2
+        DB3 -..-> M3
         
         Common --> M1 & M2 & M3
         
@@ -100,3 +100,4 @@ graph TB
     Phase1 -.-> Phase1Detail
     Phase2 -..-> Phase2Detail
 ```
+
