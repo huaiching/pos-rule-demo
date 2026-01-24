@@ -97,6 +97,6 @@ graph TB
     end
 
     %% 主流程與細節連接
-    Phase1 -.關聯.-> Phase1Detail
-    Phase2 -.關聯.-> Phase2Detail
+    Phase1 -.-> Phase1Detail
+    Phase2 -..-> Phase2Detail
 ```
