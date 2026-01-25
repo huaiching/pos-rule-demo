@@ -17,27 +17,7 @@ import java.util.stream.Collectors;
 @Service
 public class RuleCalcService {
     @Autowired
-    private PolfRepository polfRepository;
-    @Autowired
-    private ColfRepository colfRepository;
-    @Autowired
-    private ClntRepository clntRepository;
-    @Autowired
-    private AddrRepository addrRepository;
-    @Autowired
-    private PoclRepository poclRepository;
-    @Autowired
-    private RspoRepository rspoRepository;
-    @Autowired
-    private RscoRepository rscoRepository;
-    @Autowired
-    private RsclRepository rsclRepository;
-    @Autowired
-    private RsdrRepository rsdrRepository;
-    @Autowired
-    private ChswRepository chswRepository;
-    @Autowired
-    private PldfRepository pldfRepository;
+    private LoadDataService loadDataService;
     @Autowired
     private List<ChangeVariableContract> changeVariableContractList;
 
@@ -81,15 +61,15 @@ public class RuleCalcService {
      */
     private Map<String, Object> setBasicModel(Map<String, Object> commonMap) {
         // 取得 測試用初始資料
-        List<PolfEntity> polfEntityList = polfRepository.findAll();
-        List<RspoEntity> rspoEntityList = rspoRepository.findAll();
-        List<ChswEntity> chswEntityList = chswRepository.findAll();
+        PolfEntity polf = loadDataService.getPolf();
+        RspoEntity rspo = loadDataService.getRslf();
+        ChswEntity chsw = loadDataService.getChsw();
 
         // 資料設定
         Map<String, Object> basicDataMap = new HashMap<>();
-        basicDataMap.put("polf", polfEntityList.get(0));
-        basicDataMap.put("rspo", rspoEntityList.get(0));
-        basicDataMap.put("chsw", chswEntityList.get(0));
+        basicDataMap.put("polf", polf);
+        basicDataMap.put("rspo", rspo);
+        basicDataMap.put("chsw", chsw);
         // 設定輸出
         basicDataMap.putAll(commonMap);
 
@@ -103,9 +83,9 @@ public class RuleCalcService {
      */
     private List<Map<String, Object>> setCoverageModel(Map<String, Object> commonMap) {
         // 取得 測試用初始資料
-        List<ColfEntity> colfEntityList = colfRepository.findAll();
-        List<RscoEntity> rscoEntityList = rscoRepository.findAll();
-        List<PldfEntity> pldfEntityList = pldfRepository.findAll();
+        List<ColfEntity> colfEntityList = loadDataService.getColf();
+        List<RscoEntity> rscoEntityList = loadDataService.getRsco();
+        List<PldfEntity> pldfEntityList = loadDataService.getPldf();
 
         // 資料設定
         List<Map<String, Object>> converageDataMapList = new ArrayList<>();
@@ -151,11 +131,11 @@ public class RuleCalcService {
      */
     private List<Map<String, Object>> setClientModel(Map<String, Object> commonMap) {
         // 取得 測試用初始資料
-        List<ClntEntity> clntEntityList = clntRepository.findAll();
-        List<AddrEntity> addrEntityList = addrRepository.findAll();
-        List<PoclEntity> poclEntityList = poclRepository.findAll();
-        List<RsclEntity> rsclEntityList = rsclRepository.findAll();
-        List<RsdrEntity> rsdrEntityList = rsdrRepository.findAll();
+        List<ClntEntity> clntEntityList = loadDataService.getClnt();
+        List<AddrEntity> addrEntityList = loadDataService.getAddr();
+        List<PoclEntity> poclEntityList = loadDataService.getPocl();
+        List<RsclEntity> rsclEntityList = loadDataService.getRscl();
+        List<RsdrEntity> rsdrEntityList = loadDataService.getRsdr();
 
         // 資料設定
         List<Map<String, Object>> clientDataMapList = new ArrayList<>();
