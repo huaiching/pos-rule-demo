@@ -1,4 +1,4 @@
-package com.mli.flow.dto;
+package com.mli.flow.dto.engine;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

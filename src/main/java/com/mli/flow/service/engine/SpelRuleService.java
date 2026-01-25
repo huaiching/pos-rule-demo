@@ -1,6 +1,6 @@
 package com.mli.flow.service.engine;
 
-import com.mli.flow.dto.RuleEvalResultDTO;
+import com.mli.flow.dto.engine.RuleEvalResultDTO;
 import com.mli.flow.exceptions.BusinessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

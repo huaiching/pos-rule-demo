@@ -2,8 +2,8 @@ package com.mli.flow.service.engine;
 
 import com.mli.flow.constants.MessageTypeEnum;
 import com.mli.flow.constants.RuleTypeEnum;
-import com.mli.flow.dto.CheckResultDTO;
-import com.mli.flow.dto.RuleEvalResultDTO;
+import com.mli.flow.dto.engine.CheckResultDTO;
+import com.mli.flow.dto.engine.RuleEvalResultDTO;
 import com.mli.flow.entity.PosRuleEntity;
 import com.mli.flow.entity.PosRuleMessageEntity;
 import com.mli.flow.entity.PsecEntity;
@@ -17,6 +17,9 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
+/**
+ * 核保訊息 規則檢核: 主流程
+ */
 @Service
 public class CheckService {
     @Autowired

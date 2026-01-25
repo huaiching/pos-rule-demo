@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * 前置資料 讀取相關 邏輯
+ * 前置資料 讀取相關邏輯
  */
 
 @Service

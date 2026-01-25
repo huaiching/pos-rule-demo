@@ -4,6 +4,29 @@
 # DB 操作頁面
 - http://localhost:9010/h2-console
 
+# 資料結構
+
+```
+contract                              # 定義類的 interface (為了要自動啟動 非同步，需要統一規則)
+  ├── ChangeVariableContract.java       # Common 規則變數 的 方法定義
+controller                            # 處理請求
+service                               # 業務邏輯
+  ├── RuleMainService.java              # 主流程
+  ├── RuleCalcService.java              # 檢核變數整理
+  ├── LoadDataService.java              # 前置資料 讀取相關邏輯
+  ├── engine                            # 規則檢核相關
+     ├── CheckService.java                # 核保訊息 規則檢核: 主流程
+     ├── SpelRuleService.java             # SpEL 規則引擎 檢核模組
+  ├── variable                          # Common 變數設定 相關邏輯
+     ├── ...                              # 每個檔案 皆為 可獨立設定的欄位 (需繼承 ChangeVariableContract)
+exceptions                            # 錯誤處理設定
+dto                                   # 一般的資料傳輸物件
+  ├── engine                            # 規則檢核相關
+     ├── CheckResultDTO.java              # 核保檢核結果
+     ├── RuleEvalResultDTO.java           # 規則評估結果
+vo                                    # 對外的資料傳輸物件
+```
+
 # 簡易流程圖
 ```mermaid
 graph TB
@@ -100,4 +123,5 @@ graph TB
     Phase1 -.-> Phase1Detail
     Phase2 -..-> Phase2Detail
 ```
+
 
