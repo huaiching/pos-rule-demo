@@ -6,10 +6,10 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 @EntityScan
 @SpringBootApplication
-public class Application {
+public class FlowApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args);
+		SpringApplication.run(FlowApplication.class, args);
 	}
 
 }

@@ -3,7 +3,7 @@ server:
 # ==================== SpringBoot ====================
 spring:
   application:
-    name: flowable-case-demo
+    name: pos-rule-demo
   datasource:
     url: jdbc:h2:file:./database/mydb
     driver-class-name: org.h2.Driver
@@ -18,17 +18,18 @@ spring:
       path: /h2-console
       settings:
         web-allow-others: false
-  jpa:
-    hibernate:
-      ddl-auto: none
-    show-sql: false
-    properties:
-      hibernate:
-        format_sql: true
+  # H2 資料庫初始化設定 (可選)
   sql:
     init:
       mode: always
       continue-on-error: true
+  jpa:
+    hibernate:
+      ddl-auto: none    # 不會對資料表進行任何異動
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
 
 # ==================== Springdoc / Swagger ====================
 springdoc:
@@ -38,7 +39,3 @@ springdoc:
   swagger-ui:
     version: 5.11.10
     path: /swagger-ui.html
-    # 讓 Swagger 也可以直接看到 Flowable 內建的 REST（可選）
-#    urls:
-#      - name: 自訂 API
-#        url: /api-docs

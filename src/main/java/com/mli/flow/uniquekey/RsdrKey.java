@@ -2,7 +2,7 @@ package com.mli.flow.uniquekey;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import javax.persistence.Embeddable;
+import jakarta.persistence.Embeddable;
 import java.io.Serializable;
 import java.util.Objects;
 

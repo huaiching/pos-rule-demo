@@ -3,7 +3,7 @@ package com.mli.flow.entity;
 import com.mli.flow.uniquekey.ChswKey;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.Objects;
 
 @Entity
