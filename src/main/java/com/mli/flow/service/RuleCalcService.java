@@ -3,9 +3,9 @@ package com.mli.flow.service;
 import com.mli.flow.contract.ChangeVariableContract;
 import com.mli.flow.entity.*;
 import com.mli.flow.repository.*;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -158,7 +158,7 @@ public class RuleCalcService {
                     .filter(pocl -> pocl.getClientIdent().equals(clientIdent))
                     .map(PoclEntity::getClientId)
                     .findFirst().orElse(null);
-            if (!StringUtils.isEmpty(clientIdOri)) {
+            if (!StringUtils.isBlank(clientIdOri)) {
                 ClntEntity clntEntity = clntEntityList.stream()
                         .filter(clnt -> clnt.getClientId().equals(clientIdOri))
                         .findFirst().orElse(null);
