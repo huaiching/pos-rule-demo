@@ -61,9 +61,13 @@ public class RuleCalcService {
      */
     private Map<String, Object> setBasicModel(Map<String, Object> commonMap) {
         // 取得 測試用初始資料
-        PolfEntity polf = loadDataService.getPolf();
-        RspoEntity rspo = loadDataService.getRslf();
-        ChswEntity chsw = loadDataService.getChsw();
+        CompletableFuture<PolfEntity> polfFuture = CompletableFuture.supplyAsync(() -> loadDataService.getPolf());
+        CompletableFuture<RspoEntity> rspoFuture = CompletableFuture.supplyAsync(() -> loadDataService.getRslf());
+        CompletableFuture<ChswEntity> chswFuture = CompletableFuture.supplyAsync(() -> loadDataService.getChsw());
+
+        PolfEntity polf = polfFuture.join();
+        RspoEntity rspo = rspoFuture.join();
+        ChswEntity chsw = chswFuture.join();
 
         // 資料設定
         Map<String, Object> basicDataMap = new HashMap<>();
@@ -83,9 +87,13 @@ public class RuleCalcService {
      */
     private List<Map<String, Object>> setCoverageModel(Map<String, Object> commonMap) {
         // 取得 測試用初始資料
-        List<ColfEntity> colfEntityList = loadDataService.getColf();
-        List<RscoEntity> rscoEntityList = loadDataService.getRsco();
-        List<PldfEntity> pldfEntityList = loadDataService.getPldf();
+        CompletableFuture<List<ColfEntity>> colfFuture = CompletableFuture.supplyAsync(() -> loadDataService.getColf());
+        CompletableFuture<List<RscoEntity>> rscoFuture = CompletableFuture.supplyAsync(() -> loadDataService.getRsco());
+        CompletableFuture<List<PldfEntity>> pldfFuture = CompletableFuture.supplyAsync(() -> loadDataService.getPldf());
+
+        List<ColfEntity> colfEntityList = colfFuture.join();
+        List<RscoEntity> rscoEntityList = rscoFuture.join();
+        List<PldfEntity> pldfEntityList = pldfFuture.join();
 
         // 資料設定
         List<Map<String, Object>> converageDataMapList = new ArrayList<>();
@@ -131,11 +139,17 @@ public class RuleCalcService {
      */
     private List<Map<String, Object>> setClientModel(Map<String, Object> commonMap) {
         // 取得 測試用初始資料
-        List<ClntEntity> clntEntityList = loadDataService.getClnt();
-        List<AddrEntity> addrEntityList = loadDataService.getAddr();
-        List<PoclEntity> poclEntityList = loadDataService.getPocl();
-        List<RsclEntity> rsclEntityList = loadDataService.getRscl();
-        List<RsdrEntity> rsdrEntityList = loadDataService.getRsdr();
+        CompletableFuture<List<ClntEntity>> clntFuture = CompletableFuture.supplyAsync(() -> loadDataService.getClnt());
+        CompletableFuture<List<AddrEntity>> addrFuture = CompletableFuture.supplyAsync(() -> loadDataService.getAddr());
+        CompletableFuture<List<PoclEntity>> poclFuture = CompletableFuture.supplyAsync(() -> loadDataService.getPocl());
+        CompletableFuture<List<RsclEntity>> rsclFuture = CompletableFuture.supplyAsync(() -> loadDataService.getRscl());
+        CompletableFuture<List<RsdrEntity>> rsdrFuture = CompletableFuture.supplyAsync(() -> loadDataService.getRsdr());
+
+        List<ClntEntity> clntEntityList = clntFuture.join();
+        List<AddrEntity> addrEntityList = addrFuture.join();
+        List<PoclEntity> poclEntityList = poclFuture.join();
+        List<RsclEntity> rsclEntityList = rsclFuture.join();
+        List<RsdrEntity> rsdrEntityList = rsdrFuture.join();
 
         // 資料設定
         List<Map<String, Object>> clientDataMapList = new ArrayList<>();
