@@ -2,6 +2,8 @@ package com.mli.flow.model.lifeChagne.dto.rule;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.util.List;
+
 @Schema(description = "核保訊息檔")
 public class PsecDTO {
     @Schema(description = "核保訊息代碼")
@@ -10,6 +12,8 @@ public class PsecDTO {
     private String nbErrDesc;
     @Schema(description = "核保等級")
     private String severity;
+    @Schema(description = "核保訊息模板檔")
+    private RuleMessageDTO ruleMessageDTO;
 
     public String getNbErrCode() {
         return nbErrCode;
@@ -33,5 +37,13 @@ public class PsecDTO {
 
     public void setSeverity(String severity) {
         this.severity = severity;
+    }
+
+    public RuleMessageDTO getRuleMessageDTO() {
+        return ruleMessageDTO;
+    }
+
+    public void setRuleMessageDTO(RuleMessageDTO ruleMessageDTO) {
+        this.ruleMessageDTO = ruleMessageDTO;
     }
 }

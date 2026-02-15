@@ -12,6 +12,7 @@ import com.mli.flow.model.entity.repository.PosRuleRepository;
 import com.mli.flow.model.entity.repository.PsecRepository;
 import com.mli.flow.model.lifeChagne.dto.rule.PsecDTO;
 import com.mli.flow.model.lifeChagne.dto.rule.RuleExpressionDTO;
+import com.mli.flow.model.lifeChagne.dto.rule.RuleMessageDTO;
 import com.mli.flow.model.lifeChagne.dto.rule.RuleTableDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,8 +28,6 @@ import java.util.stream.Collectors;
 public class CheckService {
     @Autowired
     private SpelRuleService spelRuleService;
-    @Autowired
-    private PosRuleMessageRepository posRuleMessageRepository;
 
     /**
      * 執行核保訊息檢核
@@ -41,11 +40,11 @@ public class CheckService {
         // 取得所有核保規則
         List<PsecDTO> psecList = ruleTableDTO.getPsecList();
         // 取得所有檢核規則
-        List<RuleExpressionDTO> allRules = ruleTableDTO.getRuleExpressionList();
+        List<RuleExpressionDTO> ruleExpressionList = ruleTableDTO.getRuleExpressionList();
 
         // 進行核保檢核
         psecList.parallelStream().forEach(psec -> {
-            results.addAll(Objects.requireNonNull(evaluateRule(psec, allRules, dataMap)));
+            results.addAll(Objects.requireNonNull(evaluateRule(psec, ruleExpressionList, dataMap)));
         });
 
         return results;
@@ -54,14 +53,14 @@ public class CheckService {
     /**
      * 單一核保訊息檢核
      *
-     * @param psecEntity 核保訊息表
-     * @param allRules   核保規則表
-     * @param dataMap    檢核變數
+     * @param psecEntity         核保訊息表
+     * @param ruleExpressionList 核保規則表
+     * @param dataMap            檢核變數
      */
-    private List<CheckResultDTO> evaluateRule(PsecDTO psecEntity, List<RuleExpressionDTO> allRules, Map<String, Object> dataMap) {
+    private List<CheckResultDTO> evaluateRule(PsecDTO psecEntity, List<RuleExpressionDTO> ruleExpressionList, Map<String, Object> dataMap) {
         List<CheckResultDTO> checkResultDTOList = new CopyOnWriteArrayList<>();
         // 取得 要檢核的規則
-        List<RuleExpressionDTO> checkRuleList = allRules.stream()
+        List<RuleExpressionDTO> checkRuleList = ruleExpressionList.stream()
                 .filter(rule -> rule.getNbErrCode().equals(psecEntity.getNbErrCode()))
                 .toList();
         if (checkRuleList.isEmpty()) {
@@ -94,17 +93,17 @@ public class CheckService {
     /**
      * 單一核保訊息 群組檢核 (群組內的條件為 AND 關係)
      *
-     * @param allRules 核保規則表
-     * @param dataMap  檢核變數
+     * @param ruleExpressionList 核保規則表
+     * @param dataMap            檢核變數
      */
-    private RuleEvalResultDTO evaluateGroup(List<RuleExpressionDTO> allRules, Map<String, Object> dataMap) {
+    private RuleEvalResultDTO evaluateGroup(List<RuleExpressionDTO> ruleExpressionList, Map<String, Object> dataMap) {
         RuleEvalResultDTO groupResult = new RuleEvalResultDTO();
         groupResult.setMatched(true);
         Map<String, Object> simpleContext = new HashMap<>();
         List<Map<String, Object>> complexContexts = new ArrayList<>();
 
-        for (RuleExpressionDTO rule : allRules) {
-            RuleEvalResultDTO ruleResult = evaluateExpression(rule, dataMap);
+        for (RuleExpressionDTO ruleExpressionDTO : ruleExpressionList) {
+            RuleEvalResultDTO ruleResult = evaluateExpression(ruleExpressionDTO, dataMap);
             simpleContext.putAll(ruleResult.getSimpleContext());
             complexContexts.addAll(ruleResult.getComplexContexts());
             if (!ruleResult.getMatched()) {
@@ -122,12 +121,11 @@ public class CheckService {
     /**
      * 檢核單一規則
      *
-     * @param rule    檢核規則
-     * @param dataMap 檢核變數
-     * @return
+     * @param ruleExpressionDTO 檢核規則
+     * @param dataMap           檢核變數
      */
-    private RuleEvalResultDTO evaluateExpression(RuleExpressionDTO rule, Map<String, Object> dataMap) {
-        String ruleModel = rule.getRuleModel();
+    private RuleEvalResultDTO evaluateExpression(RuleExpressionDTO ruleExpressionDTO, Map<String, Object> dataMap) {
+        String ruleModel = ruleExpressionDTO.getRuleModel();
 
         switch (RuleTypeEnum.fromCode(ruleModel)) {
             // 基本模組
@@ -138,7 +136,7 @@ public class CheckService {
                 }
                 return spelRuleService.evaluateRule(
                         basicData,
-                        rule.getExpression()
+                        ruleExpressionDTO.getExpression()
                 );
             // 保障模組
             case COVERAGE:
@@ -148,7 +146,7 @@ public class CheckService {
                 }
                 return spelRuleService.evaluateRule(
                         coverageData,
-                        rule.getExpression()
+                        ruleExpressionDTO.getExpression()
                 );
             // 客戶模組
             case CLIENT:
@@ -159,7 +157,7 @@ public class CheckService {
                 }
                 return spelRuleService.evaluateRule(
                         clientData,
-                        rule.getExpression()
+                        ruleExpressionDTO.getExpression()
                 );
             default:
                 RuleEvalResultDTO emptyResult = new RuleEvalResultDTO();
@@ -172,23 +170,19 @@ public class CheckService {
      * 建立檢核結果
      */
     private CheckResultDTO buildCheckResult(PsecDTO psec, RuleEvalResultDTO evalResult) {
-        // 查詢訊息模板
-        Optional<PosRuleMessageEntity> messageEntityOpt =
-                posRuleMessageRepository.findById(psec.getNbErrCode());
-
         // 產生 核保訊息文字
         List<String> messageList = new ArrayList<>();
 
-        if (messageEntityOpt.isPresent()) {
-            PosRuleMessageEntity messageEntity = messageEntityOpt.get();
+        if (psec.getRuleMessageDTO() != null) {
+            RuleMessageDTO ruleMessageDTO = psec.getRuleMessageDTO();
 
-            switch (MessageTypeEnum.fromCode(messageEntity.getMessageType())) {
+            switch (MessageTypeEnum.fromCode(ruleMessageDTO.getMessageType())) {
                 case SIMPLE:
-                    String messageSimple = spelRuleService.generateMessages(evalResult.getSimpleContext(), messageEntity.getMessageTemplate(), psec.getNbErrDesc());
+                    String messageSimple = spelRuleService.generateMessages(evalResult.getSimpleContext(), ruleMessageDTO.getMessageTemplate(), psec.getNbErrDesc());
                     messageList.add(messageSimple);
                 case COMPLEX:
                     for (Map<String, Object> complexContext : evalResult.getComplexContexts()) {
-                        String messageComplex = spelRuleService.generateMessages(complexContext, messageEntity.getMessageTemplate(), psec.getNbErrDesc());
+                        String messageComplex = spelRuleService.generateMessages(complexContext, ruleMessageDTO.getMessageTemplate(), psec.getNbErrDesc());
                         messageList.add(messageComplex);
                     }
             }

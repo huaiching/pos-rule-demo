@@ -3,6 +3,7 @@ package com.mli.flow.model.lifeChagne.service;
 import com.mli.flow.model.common.exceptions.MliException;
 import com.mli.flow.model.lifeChagne.dto.rule.PsecDTO;
 import com.mli.flow.model.lifeChagne.dto.rule.RuleExpressionDTO;
+import com.mli.flow.model.lifeChagne.dto.rule.RuleMessageDTO;
 import com.mli.flow.model.lifeChagne.dto.rule.RuleTableDTO;
 import com.mli.flow.model.lifeChagne.util.MliLoadExcelUtil;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -41,7 +42,18 @@ public class RuleTableService {
      */
     private List<PsecDTO> getPsec() {
         String sql = "select * from psec";
-        return namedParameterJdbcTemplate.query(sql, new HashMap<>(), new BeanPropertyRowMapper<>(PsecDTO.class));
+        List<PsecDTO> psecDTOList = namedParameterJdbcTemplate.query(sql, new HashMap<>(), new BeanPropertyRowMapper<>(PsecDTO.class));
+
+        List<RuleMessageDTO> ruleMessageDTOList = getRuleMessage();
+        for (PsecDTO psecDTO : psecDTOList) {
+            RuleMessageDTO ruleMessageDTO = ruleMessageDTOList.stream()
+                    .filter(rule -> rule.getNbErrCode().equals(psecDTO.getNbErrCode()))
+                    .findFirst().orElse(null);
+
+            psecDTO.setRuleMessageDTO(ruleMessageDTO);
+        }
+
+        return psecDTOList;
     }
 
     /**
@@ -50,7 +62,7 @@ public class RuleTableService {
     private List<RuleExpressionDTO> getRuleExpression() {
         List<RuleExpressionDTO> ruleExpressionList = new ArrayList<>();
         try {
-            List<Object[]> loadDataList = MliLoadExcelUtil.loadExcelFromResources("templates/RuleExpression.xlsx",true);
+            List<Object[]> loadDataList = MliLoadExcelUtil.loadExcelFromResources("templates/RuleExpression.xlsx", true);
             for (Object[] data : loadDataList) {
                 RuleExpressionDTO ruleExpressionDTO = new RuleExpressionDTO();
                 ruleExpressionDTO.setNbErrCode(String.valueOf(data[0]));
@@ -60,8 +72,25 @@ public class RuleTableService {
                 ruleExpressionList.add(ruleExpressionDTO);
             }
         } catch (IOException | InvalidFormatException e) {
-            throw new MliException(HttpStatus.INTERNAL_SERVER_ERROR, "規則表 Excel 讀取失敗:"+e.getMessage());
+            throw new MliException(HttpStatus.INTERNAL_SERVER_ERROR, "規則表 Excel 讀取失敗:" + e.getMessage());
         }
         return ruleExpressionList;
+    }
+
+    private List<RuleMessageDTO> getRuleMessage() {
+        List<RuleMessageDTO> ruleMessageDTOList = new ArrayList<>();
+        try {
+            List<Object[]> loadDataList = MliLoadExcelUtil.loadExcelFromResources("templates/RuleMessage.xlsx", true);
+            for (Object[] data : loadDataList) {
+                RuleMessageDTO ruleMessageDTO = new RuleMessageDTO();
+                ruleMessageDTO.setNbErrCode(String.valueOf(data[0]));
+                ruleMessageDTO.setMessageType(String.valueOf(data[1]));
+                ruleMessageDTO.setMessageTemplate(String.valueOf(data[2]));
+                ruleMessageDTOList.add(ruleMessageDTO);
+            }
+        } catch (IOException | InvalidFormatException e) {
+            throw new MliException(HttpStatus.INTERNAL_SERVER_ERROR, "規則表 Excel 讀取失敗:" + e.getMessage());
+        }
+        return ruleMessageDTOList;
     }
 }
