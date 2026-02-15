@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS addr (
     client_id       VARCHAR(10),        -- 客戶證號
     addr_ind        VARCHAR(1),         -- 地址指示
     address         VARCHAR(72),        -- 地址
-    tel_1           VARCHAR(10)         -- 電話
+    tel_1           VARCHAR(11)         -- 電話
 );
 
 CREATE UNIQUE INDEX index_1 ON addr(client_id, addr_ind);
@@ -142,7 +142,7 @@ CREATE TABLE IF NOT EXISTS rsdr (
     receive_no      VARCHAR(8),         -- 受理號碼
     function_ind    VARCHAR(1),         -- 功能碼
     address         VARCHAR(72),        -- 地址
-    tel_1           VARCHAR(10)         -- 電話
+    tel_1           VARCHAR(11)         -- 電話
 );
 
 CREATE UNIQUE INDEX index_1 ON rsdr(client_id, addr_ind);
