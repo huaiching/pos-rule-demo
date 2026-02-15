@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 前置資料 讀取相關邏輯
@@ -25,6 +26,7 @@ public class LoadDataService {
 
     public LoadDTO getAllData(String policyNo, String receiveNo) {
         LoadDTO loadDTO = new LoadDTO();
+
         // 取得資料: 變更前
         loadDTO.setPolf(getPolf(policyNo));
         loadDTO.setColfList(getColf(policyNo));
