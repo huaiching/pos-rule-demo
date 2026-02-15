@@ -52,7 +52,7 @@ public class SpelRuleService {
             Boolean result = expression.getValue(context, Boolean.class);
             // 判斷結果處理
             ruleEvalResultDTO.setMatched(Boolean.TRUE.equals(result));
-            log.info("檢核規則={}, 檢核結果={}", ruleCode, result);
+//            log.info("檢核規則={}, 檢核結果={}", ruleCode, result);
             // 保存命中資料的檢核變數
             if (ruleEvalResultDTO.getMatched()) {
                 ruleEvalResultDTO.setSimpleContext(dataMap);
@@ -88,7 +88,7 @@ public class SpelRuleService {
                     return PARSER.parseExpression(code);
                 });
                 Boolean result = expression.getValue(context, Boolean.class);
-                log.info("檢核規則={}, 檢核結果={}", ruleCode, result);
+//                log.info("檢核規則={}, 檢核結果={}", ruleCode, result);
                 // 保存命中資料的檢核變數
                 if (Boolean.TRUE.equals(result)) {
                     ruleEvalResultDTO.setMatched(true);
