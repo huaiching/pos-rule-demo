@@ -62,7 +62,7 @@ public class RuleTableService {
     private List<RuleExpressionDTO> getRuleExpression() {
         List<RuleExpressionDTO> ruleExpressionList = new ArrayList<>();
         try {
-            List<Object[]> loadDataList = MliLoadExcelUtil.loadExcelFromResources("templates/RuleExpression.xlsx", true);
+            List<Object[]> loadDataList = MliLoadExcelUtil.loadExcel("templates/RuleExpression.xlsx", true);
             for (Object[] data : loadDataList) {
                 RuleExpressionDTO ruleExpressionDTO = new RuleExpressionDTO();
                 ruleExpressionDTO.setNbErrCode(String.valueOf(data[0]));
@@ -80,7 +80,7 @@ public class RuleTableService {
     private List<RuleMessageDTO> getRuleMessage() {
         List<RuleMessageDTO> ruleMessageDTOList = new ArrayList<>();
         try {
-            List<Object[]> loadDataList = MliLoadExcelUtil.loadExcelFromResources("templates/RuleMessage.xlsx", true);
+            List<Object[]> loadDataList = MliLoadExcelUtil.loadExcel("templates/RuleMessage.xlsx", true);
             for (Object[] data : loadDataList) {
                 RuleMessageDTO ruleMessageDTO = new RuleMessageDTO();
                 ruleMessageDTO.setNbErrCode(String.valueOf(data[0]));

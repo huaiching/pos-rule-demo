@@ -3,7 +3,6 @@ package com.mli.flow.model.lifeChagne.util;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,36 +15,23 @@ import java.util.List;
 
 public class MliLoadExcelUtil {
     /**
-     * 從前端上傳的檔案讀取 Excel 資料
-     *
-     * @param file      Excel檔案
-     * @param hasHeader true.存在標題列 / false.不存在標題列 (標題列不會讀取)
-     */
-    public static List<Object[]> loadExcelFromMultipartFile(MultipartFile file, boolean hasHeader)
-            throws IOException, InvalidFormatException {
-        try (InputStream inputStream = file.getInputStream()) {
-            return readExcel(inputStream, hasHeader);
-        }
-    }
-
-    /**
      * 從 resources 資料夾讀取 Excel 檔案
      *
      * @param resourcePath Excel檔案 (路徑)
      * @param hasHeader    true.存在標題列 / false.不存在標題列 (標題列不會讀取)
      */
-    public static List<Object[]> loadExcelFromResources(String resourcePath, boolean hasHeader)
+    public static List<Object[]> loadExcel(String resourcePath, boolean hasHeader)
             throws IOException, InvalidFormatException {
         ClassPathResource resource = new ClassPathResource(resourcePath);
         try (InputStream inputStream = resource.getInputStream()) {
-            return readExcel(inputStream, hasHeader);
+            return loadExcel(inputStream, hasHeader);
         }
     }
 
     /**
      * 核心讀取邏輯：統一每行長度為整個 sheet 的最大欄數
      */
-    private static List<Object[]> readExcel(InputStream inputStream, boolean hasHeader)
+    private static List<Object[]> loadExcel(InputStream inputStream, boolean hasHeader)
             throws IOException, InvalidFormatException {
         Workbook workbook = WorkbookFactory.create(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
@@ -130,7 +116,7 @@ public class MliLoadExcelUtil {
             }
             case BOOLEAN -> cell.getBooleanCellValue();
             case BLANK -> null;
-            default -> cell.toString().trim();  // 保險
+            default -> cell.toString().trim();
         };
     }
 }
