@@ -17,6 +17,9 @@ import java.util.List;
 public class MliLoadExcelUtil {
     /**
      * 從前端上傳的檔案讀取 Excel 資料
+     *
+     * @param file      Excel檔案
+     * @param hasHeader true.存在標題列 / false.不存在標題列 (標題列不會讀取)
      */
     public static List<Object[]> loadExcelFromMultipartFile(MultipartFile file, boolean hasHeader)
             throws IOException, InvalidFormatException {
@@ -27,6 +30,9 @@ public class MliLoadExcelUtil {
 
     /**
      * 從 resources 資料夾讀取 Excel 檔案
+     *
+     * @param resourcePath Excel檔案 (路徑)
+     * @param hasHeader    true.存在標題列 / false.不存在標題列 (標題列不會讀取)
      */
     public static List<Object[]> loadExcelFromResources(String resourcePath, boolean hasHeader)
             throws IOException, InvalidFormatException {
