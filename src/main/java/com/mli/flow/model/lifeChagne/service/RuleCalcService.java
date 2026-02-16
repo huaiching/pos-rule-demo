@@ -3,6 +3,7 @@ package com.mli.flow.model.lifeChagne.service;
 import com.mli.flow.model.entity.entity.*;
 import com.mli.flow.model.lifeChagne.contract.ChangeVariableContract;
 import com.mli.flow.model.lifeChagne.dto.LoadDTO;
+import com.mli.flow.model.lifeChagne.dto.spel.RuleDataDTO;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,8 +18,6 @@ import java.util.stream.Collectors;
 @Service
 public class RuleCalcService {
     @Autowired
-    private LoadDataService loadDataService;
-    @Autowired
     private List<ChangeVariableContract> changeVariableContractList;
 
     /**
@@ -26,7 +25,7 @@ public class RuleCalcService {
      *
      * @param loadDTO 初始資料
      */
-    public Map<String, Object> execute(LoadDTO loadDTO) {
+    public RuleDataDTO execute(LoadDTO loadDTO) {
         // 設定 共用的檢核變數
         Map<String, Object> commonMap = setCommonModel();
         // 設定資料: 基本模組
@@ -37,12 +36,12 @@ public class RuleCalcService {
         List<Map<String, Object>> clientDataMapList = setClientModel(loadDTO, commonMap);
 
         // 設定輸出
-        Map<String, Object> outputMap = new HashMap<>();
-        outputMap.put("basic", basicDataMap);
-        outputMap.put("coverage", converageDataMapList);
-        outputMap.put("client", clientDataMapList);
+        RuleDataDTO ruleDataDTO = new RuleDataDTO();
+        ruleDataDTO.setBasicDataMap(basicDataMap);
+        ruleDataDTO.setClientDataMapList(clientDataMapList);
+        ruleDataDTO.setConverageDataMapList(converageDataMapList);
 
-        return outputMap;
+        return ruleDataDTO;
     }
 
     /**
