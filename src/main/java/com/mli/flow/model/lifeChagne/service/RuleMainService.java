@@ -3,13 +3,12 @@ package com.mli.flow.model.lifeChagne.service;
 import com.mli.flow.model.lifeChagne.dto.LoadDTO;
 import com.mli.flow.model.lifeChagne.dto.engine.CheckResultDTO;
 import com.mli.flow.model.lifeChagne.dto.rule.RuleTableDTO;
-import com.mli.flow.model.lifeChagne.dto.spel.RuleDataDTO;
+import com.mli.flow.model.lifeChagne.dto.spel.SpEPDataDTO;
 import com.mli.flow.model.lifeChagne.service.engine.CheckService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 核保檢核 主流程
@@ -30,13 +29,13 @@ public class RuleMainService {
         LoadDTO loadDTO = loadDataService.getAllData(policyNo, receiveNo);
 
         /** 變數設定 **/
-        RuleDataDTO ruleDataDTO = ruleCalcService.execute(loadDTO);
+        SpEPDataDTO spEPDataDTO = ruleCalcService.execute(loadDTO);
 
         /** 核保訊息檔 + 規則表 **/
         RuleTableDTO ruleTableDTO = ruleTableService.execute();
 
         /** 規則檢核 **/
-        List<CheckResultDTO> result = checkService.execute(ruleTableDTO, ruleDataDTO);
+        List<CheckResultDTO> result = checkService.execute(ruleTableDTO, spEPDataDTO);
 
         return result;
     }

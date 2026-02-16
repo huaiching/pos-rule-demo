@@ -3,7 +3,7 @@ package com.mli.flow.model.lifeChagne.service;
 import com.mli.flow.model.entity.entity.*;
 import com.mli.flow.model.lifeChagne.contract.ChangeVariableContract;
 import com.mli.flow.model.lifeChagne.dto.LoadDTO;
-import com.mli.flow.model.lifeChagne.dto.spel.RuleDataDTO;
+import com.mli.flow.model.lifeChagne.dto.spel.SpEPDataDTO;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ public class RuleCalcService {
      *
      * @param loadDTO 初始資料
      */
-    public RuleDataDTO execute(LoadDTO loadDTO) {
+    public SpEPDataDTO execute(LoadDTO loadDTO) {
         // 設定 共用的檢核變數
         Map<String, Object> commonMap = setCommonModel();
         // 設定資料: 基本模組
@@ -36,12 +36,12 @@ public class RuleCalcService {
         List<Map<String, Object>> clientDataMapList = setClientModel(loadDTO, commonMap);
 
         // 設定輸出
-        RuleDataDTO ruleDataDTO = new RuleDataDTO();
-        ruleDataDTO.setBasicDataMap(basicDataMap);
-        ruleDataDTO.setClientDataMapList(clientDataMapList);
-        ruleDataDTO.setConverageDataMapList(converageDataMapList);
+        SpEPDataDTO spEPDataDTO = new SpEPDataDTO();
+        spEPDataDTO.setBasicDataMap(basicDataMap);
+        spEPDataDTO.setClientDataMapList(clientDataMapList);
+        spEPDataDTO.setConverageDataMapList(converageDataMapList);
 
-        return ruleDataDTO;
+        return spEPDataDTO;
     }
 
     /**
@@ -134,35 +134,42 @@ public class RuleCalcService {
      */
     private List<Map<String, Object>> setClientModel(LoadDTO loadDTO, Map<String, Object> commonMap) {
         List<Map<String, Object>> clientDataMapList = new ArrayList<>();
-        for (RsclEntity rsclEntity : loadDTO.getRsclList()) {
+
+        // 取得 關係碼
+        List<String> clinetIdentList = loadDTO.getRsclList().stream()
+                .map(RsclEntity::getClientIdent).distinct().toList();
+        // 資料整理
+        for (String clientIdent : clinetIdentList) {
             Map<String, Object> clientDataMap = new HashMap<>();
             // 變更後
             /* rscl */
+            RsclEntity rsclEntity = loadDTO.getRsclList().stream()
+                    .filter(rsdrEntity -> rsdrEntity.getClientIdent().equals(clientIdent))
+                    .findFirst().orElse(null);
             clientDataMap.put("rscl", rsclEntity);
             /* rsdr */
+            String clientIdNew = rsclEntity != null ? rsclEntity.getClientId() : null;
             List<RsdrEntity> rsdrEntityList = loadDTO.getRsdrList().stream()
-                    .filter(rsdrEntity -> rsdrEntity.getClientId().equals(rsclEntity.getClientId()))
+                    .filter(rsdrEntity -> rsdrEntity.getClientId().equals(clientIdNew))
                     .toList();
             clientDataMap.put("rsdr", rsdrEntityList);
 
             // 變更前
-            String clientIdent = rsclEntity.getClientIdent();
             String clientIdOri = loadDTO.getPoclList().stream()
                     .filter(pocl -> pocl.getClientIdent().equals(clientIdent))
                     .map(PoclEntity::getClientId)
                     .findFirst().orElse(null);
-            if (StringUtils.isBlank(clientIdent)) {
-                /* clnt */
-                ClntEntity clntEntity = loadDTO.getClntList().stream()
-                        .filter(clnt -> clnt.getClientId().equals(clientIdOri))
-                        .findFirst().orElse(null);
-                clientDataMap.put("clnt", clntEntity);
-                /* addr */
-                List<AddrEntity> addrEntities = loadDTO.getAddrList().stream()
-                        .filter(addr -> addr.getClientId().equals(clientIdOri))
-                        .collect(Collectors.toList());
-                clientDataMap.put("addr", addrEntities);
-            }
+            /* clnt */
+            ClntEntity clntEntity = loadDTO.getClntList().stream()
+                    .filter(clnt -> clnt.getClientId().equals(clientIdOri))
+                    .findFirst().orElse(null);
+            clientDataMap.put("clnt", clntEntity);
+            /* addr */
+            List<AddrEntity> addrEntities = loadDTO.getAddrList().stream()
+                    .filter(addr -> addr.getClientId().equals(clientIdOri))
+                    .collect(Collectors.toList());
+            clientDataMap.put("addr", addrEntities);
+
             // 設定輸出
             clientDataMap.putAll(commonMap);
             clientDataMapList.add(clientDataMap);

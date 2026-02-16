@@ -8,7 +8,7 @@ import com.mli.flow.model.lifeChagne.dto.rule.PsecDTO;
 import com.mli.flow.model.lifeChagne.dto.rule.RuleExpressionDTO;
 import com.mli.flow.model.lifeChagne.dto.rule.RuleMessageDTO;
 import com.mli.flow.model.lifeChagne.dto.rule.RuleTableDTO;
-import com.mli.flow.model.lifeChagne.dto.spel.RuleDataDTO;
+import com.mli.flow.model.lifeChagne.dto.spel.SpEPDataDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,9 +28,9 @@ public class CheckService {
      * 執行核保訊息檢核
      *
      * @param ruleTableDTO 檢核規則相關檔案
-     * @param ruleDataDTO  檢核變數
+     * @param spEPDataDTO  檢核變數
      */
-    public List<CheckResultDTO> execute(RuleTableDTO ruleTableDTO, RuleDataDTO ruleDataDTO) {
+    public List<CheckResultDTO> execute(RuleTableDTO ruleTableDTO, SpEPDataDTO spEPDataDTO) {
         List<CheckResultDTO> results = new CopyOnWriteArrayList<>();
         // 取得所有核保規則
         List<PsecDTO> psecList = ruleTableDTO.getPsecList();
@@ -39,7 +39,7 @@ public class CheckService {
 
         // 進行核保檢核
         psecList.parallelStream().forEach(psec -> {
-            results.addAll(Objects.requireNonNull(evaluateRule(psec, ruleExpressionList, ruleDataDTO)));
+            results.addAll(Objects.requireNonNull(evaluateRule(psec, ruleExpressionList, spEPDataDTO)));
         });
 
         return results;
@@ -50,9 +50,9 @@ public class CheckService {
      *
      * @param psecEntity         核保訊息表
      * @param ruleExpressionList 核保規則表
-     * @param ruleDataDTO        檢核變數
+     * @param spEPDataDTO        檢核變數
      */
-    private List<CheckResultDTO> evaluateRule(PsecDTO psecEntity, List<RuleExpressionDTO> ruleExpressionList, RuleDataDTO ruleDataDTO) {
+    private List<CheckResultDTO> evaluateRule(PsecDTO psecEntity, List<RuleExpressionDTO> ruleExpressionList, SpEPDataDTO spEPDataDTO) {
         List<CheckResultDTO> checkResultDTOList = new CopyOnWriteArrayList<>();
         // 取得 要檢核的規則
         List<RuleExpressionDTO> checkRuleList = ruleExpressionList.stream()
@@ -74,7 +74,7 @@ public class CheckService {
                     .filter(rule -> rule.getGroupCode().equals(groupCode))
                     .collect(Collectors.toList());
             // 執行檢核
-            RuleEvalResultDTO evalResult = evaluateGroup(groupRules, ruleDataDTO);
+            RuleEvalResultDTO evalResult = evaluateGroup(groupRules, spEPDataDTO);
 
             if (evalResult.getMatched()) {
                 // 群組命中，生成結果
@@ -89,16 +89,16 @@ public class CheckService {
      * 單一核保訊息 群組檢核 (群組內的條件為 AND 關係)
      *
      * @param ruleExpressionList 核保規則表
-     * @param ruleDataDTO        檢核變數
+     * @param spEPDataDTO        檢核變數
      */
-    private RuleEvalResultDTO evaluateGroup(List<RuleExpressionDTO> ruleExpressionList, RuleDataDTO ruleDataDTO) {
+    private RuleEvalResultDTO evaluateGroup(List<RuleExpressionDTO> ruleExpressionList, SpEPDataDTO spEPDataDTO) {
         RuleEvalResultDTO groupResult = new RuleEvalResultDTO();
         groupResult.setMatched(true);
         Map<String, Object> simpleContext = new HashMap<>();
         List<Map<String, Object>> complexContexts = new ArrayList<>();
 
         for (RuleExpressionDTO ruleExpressionDTO : ruleExpressionList) {
-            RuleEvalResultDTO ruleResult = evaluateExpression(ruleExpressionDTO, ruleDataDTO);
+            RuleEvalResultDTO ruleResult = evaluateExpression(ruleExpressionDTO, spEPDataDTO);
             simpleContext.putAll(ruleResult.getSimpleContext());
             complexContexts.addAll(ruleResult.getComplexContexts());
             if (!ruleResult.getMatched()) {
@@ -117,15 +117,15 @@ public class CheckService {
      * 檢核單一規則
      *
      * @param ruleExpressionDTO 檢核規則
-     * @param ruleDataDTO       檢核變數
+     * @param spEPDataDTO       檢核變數
      */
-    private RuleEvalResultDTO evaluateExpression(RuleExpressionDTO ruleExpressionDTO, RuleDataDTO ruleDataDTO) {
+    private RuleEvalResultDTO evaluateExpression(RuleExpressionDTO ruleExpressionDTO, SpEPDataDTO spEPDataDTO) {
         String ruleModel = ruleExpressionDTO.getRuleModel();
 
         switch (RuleTypeEnum.getEnumByCode(ruleModel)) {
             // 基本模組
             case BASIC:
-                Map<String, Object> basicData = ruleDataDTO.getBasicDataMap();
+                Map<String, Object> basicData = spEPDataDTO.getBasicDataMap();
                 if (basicData == null) {
                     basicData = new HashMap<>();
                 }
@@ -135,7 +135,7 @@ public class CheckService {
                 );
             // 保障模組
             case COVERAGE:
-                List<Map<String, Object>> coverageData = ruleDataDTO.getConverageDataMapList();
+                List<Map<String, Object>> coverageData = spEPDataDTO.getConverageDataMapList();
                 if (coverageData == null) {
                     coverageData = new ArrayList<>();
                 }
@@ -145,7 +145,7 @@ public class CheckService {
                 );
             // 客戶模組
             case CLIENT:
-                List<Map<String, Object>> clientData = ruleDataDTO.getClientDataMapList();
+                List<Map<String, Object>> clientData = spEPDataDTO.getClientDataMapList();
                 if (clientData == null) {
                     clientData = new ArrayList<>();
                 }
