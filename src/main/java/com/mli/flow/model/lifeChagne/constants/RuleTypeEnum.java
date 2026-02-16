@@ -3,7 +3,10 @@ package com.mli.flow.model.lifeChagne.constants;
 public enum RuleTypeEnum {
     BASIC("1", "基本模組"),
     COVERAGE("2", "保障模組"),
-    CLIENT("3", "客戶模組");
+    CLIENT("3", "客戶模組"),
+    BENEFIT("4","受益人模組"),
+    INVEST("5","投資模組"),
+    TOTAL_FACE_AMT("6","累計保額模組");
 
     private final String code;
     private final String description;
