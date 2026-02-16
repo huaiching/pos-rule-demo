@@ -24,7 +24,7 @@ public enum RuleTypeEnum {
         return description;
     }
 
-    public static RuleTypeEnum fromCode(String code) {
+    public static RuleTypeEnum getEnumByCode(String code) {
         for (RuleTypeEnum type : values()) {
             if (type.code.equals(code)) {
                 return type;

@@ -4,12 +4,6 @@ import com.mli.flow.model.lifeChagne.constants.MessageTypeEnum;
 import com.mli.flow.model.lifeChagne.constants.RuleTypeEnum;
 import com.mli.flow.model.lifeChagne.dto.engine.CheckResultDTO;
 import com.mli.flow.model.lifeChagne.dto.engine.RuleEvalResultDTO;
-import com.mli.flow.model.entity.entity.PosRuleEntity;
-import com.mli.flow.model.entity.entity.PosRuleMessageEntity;
-import com.mli.flow.model.entity.entity.PsecEntity;
-import com.mli.flow.model.entity.repository.PosRuleMessageRepository;
-import com.mli.flow.model.entity.repository.PosRuleRepository;
-import com.mli.flow.model.entity.repository.PsecRepository;
 import com.mli.flow.model.lifeChagne.dto.rule.PsecDTO;
 import com.mli.flow.model.lifeChagne.dto.rule.RuleExpressionDTO;
 import com.mli.flow.model.lifeChagne.dto.rule.RuleMessageDTO;
@@ -127,7 +121,7 @@ public class CheckService {
     private RuleEvalResultDTO evaluateExpression(RuleExpressionDTO ruleExpressionDTO, Map<String, Object> dataMap) {
         String ruleModel = ruleExpressionDTO.getRuleModel();
 
-        switch (RuleTypeEnum.fromCode(ruleModel)) {
+        switch (RuleTypeEnum.getEnumByCode(ruleModel)) {
             // 基本模組
             case BASIC:
                 Map<String, Object> basicData = (Map<String, Object>) dataMap.get("basic");
@@ -176,7 +170,7 @@ public class CheckService {
         if (psec.getRuleMessageDTO() != null) {
             RuleMessageDTO ruleMessageDTO = psec.getRuleMessageDTO();
 
-            switch (MessageTypeEnum.fromCode(ruleMessageDTO.getMessageType())) {
+            switch (MessageTypeEnum.getEnumByCode(ruleMessageDTO.getMessageType())) {
                 case SIMPLE:
                     String messageSimple = spelRuleService.generateMessages(evalResult.getSimpleContext(), ruleMessageDTO.getMessageTemplate(), psec.getNbErrDesc());
                     messageList.add(messageSimple);

@@ -20,7 +20,7 @@ public enum MessageTypeEnum {
         return description;
     }
 
-    public static MessageTypeEnum fromCode(String code) {
+    public static MessageTypeEnum getEnumByCode(String code) {
         for (MessageTypeEnum type : values()) {
             if (type.code.equals(code)) {
                 return type;
